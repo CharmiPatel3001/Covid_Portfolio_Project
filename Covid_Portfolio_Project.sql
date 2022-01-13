@@ -6,10 +6,10 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 
 -- Maximum number of cases and deaths recorded in a day in India
 
-	  SELECT location, isnull((max(convert(int,new_deaths))),0) AS highest_daily_death, max(new_cases) AS highest_daily_case
-	  FROM CovidDeaths
-	  WHERE location LIKE 'India'
-	  GROUP BY location;
+      SELECT location, isnull((max(convert(int,new_deaths))),0) AS highest_daily_death, max(new_cases) AS highest_daily_case
+      FROM CovidDeaths
+      WHERE location LIKE 'India'
+      GROUP BY location;
    
 -- Cumulative total of deaths and cases recorded in India
   --[deaths]
@@ -30,22 +30,22 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 
 -- Maximum number of cases and deaths recorded in a day in the World
 
-	   SELECT location, isnull((max(new_cases)),0) AS Total_cases ,isnull((max(convert(int,new_deaths))),0)AS Total_deaths
-	   FROM CovidDeaths
-	   WHERE continent IS NOT NULL
-	   GROUP BY location
-	   ORDER BY Total_cases desc,Total_deaths desc;
+	SELECT location, isnull((max(new_cases)),0) AS Total_cases ,isnull((max(convert(int,new_deaths))),0)AS Total_deaths
+        FROM CovidDeaths
+	WHERE continent IS NOT NULL
+	GROUP BY location
+	ORDER BY Total_cases desc,Total_deaths desc;
 
 -- Total number of vaccinations recorded in the World per country
 
-	    SELECT distinct(d.location)
-			  ,SUM(convert(int,new_vaccinations)) OVER(PARTITION BY d.location )AS Total_Vaccinations
-		FROM CovidDeaths AS d
+	SELECT distinct(d.location)
+		,SUM(convert(int,new_vaccinations)) OVER(PARTITION BY d.location )AS Total_Vaccinations
+	FROM CovidDeaths AS d
         JOIN CovidVaccinations AS v 
                   ON d.location = v.location AND d.date = v.date
-		WHERE v.new_vaccinations IS NOT NULL AND d.continent IS NOT NULL
-		GROUP BY d.location,new_vaccinations
-		ORDER BY location;  -- Total_Vaccinations desc(choose any one)
+	WHERE v.new_vaccinations IS NOT NULL AND d.continent IS NOT NULL
+	GROUP BY d.location,new_vaccinations
+	ORDER BY location;  -- Total_Vaccinations desc(choose any one)
 
 --Looking at the running total number of vaccinations recorded
  
@@ -61,12 +61,12 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 
   --[World]
 
-       SELECT location,date,isnull(new_vaccinations,0) AS New_vaccinations,
-              isnull((SUM(convert(int,new_vaccinations)) OVER(PARTITION BY location ORDER BY date )),0) AS New_vaccinations_running_total
-       FROM  CovidVaccinations  
-       WHERE  continent IS NOT NULL AND new_vaccinations IS NOT NULL
-       GROUP BY location,date,new_vaccinations
-       ORDER BY location,date;
+	       SELECT location,date,isnull(new_vaccinations,0) AS New_vaccinations,
+		      isnull((SUM(convert(int,new_vaccinations)) OVER(PARTITION BY location ORDER BY date )),0) AS New_vaccinations_running_total
+	       FROM  CovidVaccinations  
+	       WHERE  continent IS NOT NULL AND new_vaccinations IS NOT NULL
+	       GROUP BY location,date,new_vaccinations
+	       ORDER BY location,date;
 
 -- Countries with Total Cases, Deaths and Vaccinations count
 
@@ -99,14 +99,14 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 -- Total Cases vs Population
 -- Shows what percentage of population have infected with Covid in India
 
-	    SELECT location,date,total_cases,population,(total_cases/population)* 100 AS Infected_rate
-		FROM CovidDeaths
-		WHERE location LIKE 'india'
-		ORDER BY date;
+	SELECT location,date,total_cases,population,(total_cases/population)* 100 AS Infected_rate
+	FROM CovidDeaths
+	WHERE location LIKE 'india'
+	ORDER BY date;
 
 -- Looking at the infected rate per country 
 
-	    SELECT distinct(location),population, SUM(new_cases) AS Total_cases,
+	SELECT distinct(location),population, SUM(new_cases) AS Total_cases,
                SUM(new_cases)/population *100 AS Infected_rate_cases, isnull((SUM(convert(int,new_deaths))),0) AS total_deaths,
                ISNULL(((SUM(convert(int,new_deaths))/(population)) *100),0) AS Infected_rate_deaths
         FROM CovidDeaths
@@ -134,15 +134,15 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 -- Shows Percentage of Population that has recieved at least one Covid Vaccine
 	--[India]
 
-		SELECT d.location,d.population,convert(date,d.date) as date,v.new_vaccinations 
+	SELECT d.location,d.population,convert(date,d.date) as date,v.new_vaccinations 
 			   ,SUM(convert(int ,v.new_vaccinations))OVER (PARTITION BY d.location ORDER BY d.location,d.date) AS Running_Total_new_vaccinations,
 			   SUM(convert(int,v.new_vaccinations))OVER(PARTITION BY d.location ORDER BY d.location,d.date)/population *100 AS Vaccinations_rate
-		FROM (SELECT location, date, new_vaccinations FROM CovidVaccinations) AS v
+	FROM (SELECT location, date, new_vaccinations FROM CovidVaccinations) AS v
 			 JOIN CovidDeaths AS d
 			 ON d.date = v.date AND d.location = v.location
-		WHERE d.continent IS NOT NULL AND new_vaccinations IS NOT NULL
+	WHERE d.continent IS NOT NULL AND new_vaccinations IS NOT NULL
 			  AND d.location LIKE '%india%'
-		ORDER BY d.location, d.date; 
+	ORDER BY d.location, d.date; 
 
 	--[World]
 
@@ -172,10 +172,10 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 -- Total test percentage against population in India
 
 	   WITH tests AS (
-	   SELECT distinct(d.location),d.population ,SUM(convert(int,new_tests))OVER() AS Total_test
-	   FROM CovidVaccinations AS v  RIGHT JOIN CovidDeaths AS d ON v.location = d.location AND v.date = d.date
-	   WHERE d.location LIKE 'india'
-	   GROUP BY d.location,new_tests,population
+		   SELECT distinct(d.location),d.population ,SUM(convert(int,new_tests))OVER() AS Total_test
+		   FROM CovidVaccinations AS v  RIGHT JOIN CovidDeaths AS d ON v.location = d.location AND v.date = d.date
+		   WHERE d.location LIKE 'india'
+		   GROUP BY d.location,new_tests,population
 	   )
 		 SELECT *,total_test/population*100 AS Test_percentage
 		 FROM tests;
@@ -206,7 +206,7 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 
 	SELECT * FROM CovidData ORDER BY Total_cases DESC;	
 
---Created a procedure that returns monthy and yearly covid data
+--Created a procedure that returns monthy and yearly covid data of countries.
 
 	IF EXISTS(SELECT * FROM SYS.procedures WHERE NAME = 'Covid_data')
 	DROP PROC Covid_data
@@ -241,7 +241,7 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 			END
 			ELSE
 				BEGIN
-				WITH covid_data AS 
+				   WITH covid_data AS 
 						(
 					SELECT distinct SUM(new_cases) OVER(PARTITION BY YEAR(d.DATE),MONTH(d.DATE),d.location ORDER BY d.location)  AS new_cases_monthy
 					,coalesce((SUM(new_cases) over(partition by  month(d.date),year(d.date))/population*100),0) as new_case_monthy_percentage,
@@ -249,27 +249,15 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 						,coalesce((SUM(convert(int,new_deaths)) over(partition by  month(d.date),year(d.date))/population*100),0) as death_case_monthy_percentage,				
 						isnull((SUM(convert(int,new_vaccinations)) OVER(PARTITION BY YEAR(d.DATE),MONTH(d.date),d.location ORDER BY d.location)),0) AS new_vaccine_monthy,
 						isnull((SUM(convert(int,new_tests)) OVER(PARTITION BY YEAR(d.date),MONTH(d.DATE),d.location ORDER BY d.location)),0) AS new_tests_monthy
-						,datename(month,d.date) AS nameofmonth,year(d.date) AS years,d.location
+						,datename(month,d.date) AS nameofmonth,year(d.date) AS years,d.location,datepart(MONTH,d.date) as monthnumber
 					FROM CovidDeaths AS d JOIN CovidVaccinations AS v ON d.location = v.location AND d.date = v.date 
- 
+					
 						)
 						SELECT location,years,nameofmonth,new_cases_monthy,new_case_monthy_percentage,new_deaths_monthy,death_case_monthy_percentage
 						,new_vaccine_monthy,new_tests_monthy
 						FROM covid_data
 						where location = @location_name
-						ORDER BY location,years, (CASE  WHEN nameofmonth ='January' THEN 1 
-														WHEN nameofmonth = 'February' THEN 2 
-														WHEN nameofmonth = 'March' THEN 3 
-														WHEN nameofmonth = 'April' THEN 4 
-														WHEN nameofmonth = 'may' THEN 5 
-														WHEN nameofmonth = 'June' THEN 6 
-														WHEN nameofmonth = 'July' THEN 7 
-														WHEN nameofmonth = 'August' THEN 8 
-														WHEN nameofmonth = 'September' THEN 9
-														WHEN nameofmonth = 'October' THEN 10
-														WHEN nameofmonth = 'November' THEN 11
-														WHEN nameofmonth = 'December' THEN 12 
-														ELSE NULL END )
+						order by location,years,monthnumber
 
 					END
 
@@ -281,4 +269,4 @@ Skills used: Joins, CTE's, Temp Tables, Aggregate Functions, Creating Views, Con
 	END;
 
 	Execute Covid_data 'united states','January'
-	Execute Covid_data 'united states'
+	Execute Covid_data 'india'
